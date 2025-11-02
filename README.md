@@ -1,11 +1,7 @@
 # Html-python-tools
-# 🚧Project Coming Soon🚧
+# InvoiceGenerator
 
-This repository is under development.  
-Exciting updates will be added soon — stay tuned!
-
-## 📅 Status
-Currently in the planning and setup phase.
+ Invoice maker with proper customization 
 
 ---
 
