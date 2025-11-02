@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>InvoiceGenerator.io</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root {
+            --primary: #1976d2;
+            --accent: #e3eafc;
+            --background: #f7fafc;
+            --invoice-bg: #fff;
+            --text-color: #222;
+            --header-gradient: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
+            --font-family: 'Segoe UI', Arial, sans-serif;
+            --row-bg: #f2f8fd;
+            --row-text: #222;
+            --company-color: #1976d2;
+        }
+        [data-theme="dark"] {
+            --primary: #22223b;
+            --accent: #3a3a5a;
+            --background: #1a1b2e;
+            --invoice-bg: #232443;
+            --text-color: #fff;
+            --header-gradient: linear-gradient(90deg, #232443 0%, #3a3a5a 100%);
+            --row-bg: #333650;
+            --row-text: #fff;
+            --company-color: #fff;
+        }
+        body {
+            background: var(--background);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+        .header-visual {
+            width: 100%;
+            background: var(--header-gradient);
+            color: #fff;
+            padding: 32px 0 24px 0;
+            text-align: center;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            margin-bottom: 28px;
+            box-shadow: 0 5px 18px rgba(44,62,80,0.13);
+        }
+        .header-visual .icon svg { width: 52px; height: 52px;}
+        .header-visual h1 { margin: 0; font-size: 2.2rem; font-weight: 700; letter-spacing: 1px;}
+        .container {
+            max-width: 740px;
+            margin: 0 auto 36px auto;
+            background: var(--invoice-bg);
+            padding: 32px 18px 18px 18px;
+            border-radius: 18px;
+            box-shadow: 0 4px 18px rgba(44,62,80,0.13);
+            font-family: var(--font-family);
+        }
+        h2.invoice-company {
+            color: var(--company-color) !important;
+            margin-top: 0;
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        .invoice-header-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .invoice-header-center .logo {
+            display: block;
+            margin: 0 auto 12px auto;
+        }
+        .invoice-header-center .company-address {
+            text-align: center;
+            margin-bottom: 0;
+            margin-top: 0;
+        }
+        h2 { color: var(--primary); margin-top: 0; }
+        .form-section { margin-bottom: 30px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #d8dee9;
+            border-radius: 5px;
+            font-size: 1rem;
+            background: #fafbfc;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        input[type="file"] { padding: 4px; }
+        .option-row {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .option-row label { margin-bottom: 0;}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.97rem;
+        }
+        th, td {
+            border: 1px solid #eee;
+            padding: 8px;
+            text-align: left;
+        }
+        th { background: var(--accent); }
+        .total-row td {
+            font-weight: bold;
+            background: var(--row-bg) !important;
+            color: var(--row-text) !important;
+        }
+        .btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.07);
+        }
+        .btn:active { background: #1565c0; }
+        .remove-btn { background: #dc3545;}
+        .invoice-box {
+            background: var(--invoice-bg);
+            color: var(--text-color);
+            padding: 20px 15px;
+            border-radius: 14px;
+            margin-top: 30px;
+            box-shadow: 0 2px 10px #eee;
+            font-family: var(--font-family);
+            transition: background 0.3s, color 0.3s;
+        }
+        .logo {
+            max-width: 120px;
+            max-height: 80px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px #ddd;
+        }
+        .logo-preview-container {
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .logo-preview-label {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 90px;
+        }
+        .logo-preview {
+            max-width: 120px;
+            max-height: 80px;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px #ddd;
+            background: #fafbfc;
+            object-fit: contain;
+            display: none;
+        }
+        #downloadBtn { display: none; margin-top: 18px; }
+        .toggle-switch {
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+            position: relative;
+        }
+        .toggle-switch input { display: none;}
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #ccc;
+            border-radius: 22px;
+            transition: 0.2s;
+        }
+        .toggle-switch input:checked + .slider {
+            background: var(--primary);
+        }
+        .slider:before {
+            content: "";
+            position: absolute;
+            left: 4px; top: 4px;
+            width: 14px; height: 14px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+        .toggle-switch input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+        .github-link {
+            text-align: center;
+            margin-top: 40px;
+            color: #222;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+        .github-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .github-link a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 900px) {
+            .container { max-width: 99vw; }
+        }
+        @media (max-width: 600px) {
+            .container { padding: 8px 2vw; }
+            .invoice-box { padding: 10px 2vw;}
+            .header-visual {
+                padding: 16px 0 12px 0;
+                font-size: 1.1rem;
+            }
+            .header-visual .icon svg { width: 34px; height: 34px;}
+        }
+        @media (max-width: 400px) {
+            .container, .invoice-box { padding: 2vw 1vw;}
+            h2 { font-size: 1.15rem;}
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="header-visual">
+        <span class="icon">
+            <svg viewBox="0 0 64 64" fill="none">
+                <rect x="10" y="8" width="44" height="48" rx="8" fill="#fff" stroke="#1976d2" stroke-width="2"/>
+                <rect x="19" y="19" width="26" height="5" rx="2.5" fill="#1976d2"/>
+                <rect x="19" y="29" width="26" height="5" rx="2.5" fill="#1976d2"/>
+                <rect x="19" y="39" width="18" height="5" rx="2.5" fill="#1976d2"/>
+                <rect x="19" y="49" width="10" height="3" rx="1.5" fill="#90caf9"/>
+            </svg>
+        </span>
+        <h1>Custom Invoice Generator</h1>
+        <div style="font-size:1.07rem;margin-top:6px;opacity:0.92">Design your invoice, select styles, add tax/discounts, and export!</div>
+    </div>
+    <div class="container" id="mainContainer">
+        <form id="invoiceForm" class="form-section" autocomplete="off">
+            <div class="option-row">
+                <label>Theme:</label>
+                <select id="themePicker">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+                <label>Accent Color:</label>
+                <input type="color" id="accentPicker" value="#1976d2" style="width:40px; margin-bottom:0;">
+            </div>
+            <div class="option-row">
+                <label>Font:</label>
+                <select id="fontPicker">
+                    <option value="'Segoe UI', Arial, sans-serif">Segoe UI</option>
+                    <option value="'Roboto', Arial, sans-serif">Roboto</option>
+                    <option value="'Arial', sans-serif">Arial</option>
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                    <option value="'Montserrat', sans-serif">Montserrat</option>
+                </select>
+                <label>Currency:</label>
+                <select id="currencyPicker">
+                    <option value="$">USD ($)</option>
+                    <option value="€">EUR (€)</option>
+                    <option value="£">GBP (£)</option>
+                    <option value="₹">INR (₹)</option>
+                    <option value="¥">JPY (¥)</option>
+                    <option value="₨">PKR (₨)</option>
+                </select>
+            </div>
+            <div class="option-row">
+                <label>Show Logo</label>
+                <span class="toggle-switch"><input type="checkbox" id="showLogo" checked><span class="slider"></span></span>
+                <label>Show Notes</label>
+                <span class="toggle-switch"><input type="checkbox" id="showNotes" checked><span class="slider"></span></span>
+                <label>Show Business Address</label>
+                <span class="toggle-switch"><input type="checkbox" id="showAddress" checked><span class="slider"></span></span>
+            </div>
+            <div class="logo-preview-container">
+                <span class="logo-preview-label">Logo Preview:</span>
+                <img id="logoPreview" class="logo-preview" src="" alt="Logo preview">
+            </div>
+            <label>Logo (upload from device or use web URL):</label>
+            <input type="file" id="logoFile" accept="image/*" style="margin-bottom:8px;">
+            <input type="text" id="logoUrl" placeholder="Or paste image URL here">
+            <label>Business Name:</label>
+            <input type="text" id="businessName" required>
+            <label>Business Address:</label>
+            <textarea id="businessAddress" rows="2"></textarea>
+            <hr>
+            <label>Customer Name:</label>
+            <input type="text" id="customerName" required>
+            <label>Customer Address:</label>
+            <textarea id="customerAddress" rows="2"></textarea>
+            <hr>
+            <label>Invoice Number:</label>
+            <input type="text" id="invoiceNumber" value="INV-1001">
+            <label>Invoice Date:</label>
+            <input type="date" id="invoiceDate" value="">
+            <label>Due Date:</label>
+            <input type="date" id="dueDate" value="">
+            <hr>
+            <label>Items (Description, Quantity, Unit Price):</label>
+            <div id="itemsContainer"></div>
+            <button type="button" class="btn" onclick="addItem()">+ Add Item</button>
+            <hr>
+            <div class="option-row">
+                <label>Tax %:</label>
+                <input type="number" id="taxPercent" value="0" min="0" max="100" style="width:70px;">
+                <label>Discount %:</label>
+                <input type="number" id="discountPercent" value="0" min="0" max="100" style="width:70px;">
+            </div>
+            <label>Notes (optional):</label>
+            <textarea id="notes" rows="2"></textarea>
+            <button type="submit" class="btn" style="margin-top:20px;">Generate Invoice</button>
+        </form>
+        <button id="downloadBtn" class="btn" onclick="downloadInvoiceImage()">Download Invoice as Image</button>
+        <div id="invoiceOutput"></div>
+    </div>
+    <div class="github-link">
+        Made with ❤️ by <a href="https://github.com/Shk-Hamza" target="_blank">Shk-Hamza</a>
+    </div>
+<script>
+    let itemCount = 0;
+    let logoDataUrl = "";
+
+    function addItem() {
+        itemCount++;
+        const container = document.getElementById('itemsContainer');
+        const div = document.createElement('div');
+        div.style.marginBottom = '10px';
+        div.innerHTML = `
+            <input type="text" placeholder="Description" id="desc${itemCount}" required style="width:47%;">
+            <input type="number" min="1" placeholder="Qty" id="qty${itemCount}" required style="width:15%;">
+            <input type="number" step="0.01" min="0" placeholder="Unit Price" id="price${itemCount}" required style="width:20%;">
+            <button type="button" class="btn remove-btn" style="margin-left:5px;" onclick="removeItem(this)">Remove</button>
+        `;
+        container.appendChild(div);
+    }
+    function removeItem(btn) {
+        btn.parentElement.remove();
+    }
+    window.onload = addItem;
+
+    // Logo preview logic
+    function updateLogoPreview() {
+        const preview = document.getElementById('logoPreview');
+        if (logoDataUrl && document.getElementById('showLogo').checked) {
+            preview.src = logoDataUrl;
+            preview.style.display = 'block';
+        } else {
+            preview.src = '';
+            preview.style.display = 'none';
+        }
+    }
+
+    document.getElementById('logoFile').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                logoDataUrl = e.target.result;
+                document.getElementById('logoUrl').value = "";
+                updateLogoPreview();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            logoDataUrl = "";
+            updateLogoPreview();
+        }
+    });
+
+    document.getElementById('logoUrl').addEventListener('input', function(event) {
+        logoDataUrl = event.target.value;
+        document.getElementById('logoFile').value = "";
+        updateLogoPreview();
+    });
+
+    document.getElementById('showLogo').addEventListener('change', updateLogoPreview);
+
+    // Live update for theme, accent, font on the whole app
+    function applyThemeFontAccent() {
+        // Theme
+        const theme = document.getElementById('themePicker').value;
+        document.documentElement.setAttribute('data-theme', theme === "dark" ? "dark" : "light");
+        // Accent
+        let accentColor = document.getElementById('accentPicker').value;
+        document.documentElement.style.setProperty('--accent', accentColor + "22");
+        if(theme === "light") {
+            document.documentElement.style.setProperty('--primary', accentColor);
+            document.documentElement.style.setProperty('--header-gradient', `linear-gradient(90deg, ${accentColor} 0%, #42a5f5 100%)`);
+            document.documentElement.style.setProperty('--company-color', accentColor);
+        } else {
+            document.documentElement.style.setProperty('--company-color', "#fff");
+        }
+        // Font
+        const font = document.getElementById('fontPicker').value;
+        document.documentElement.style.setProperty('--font-family', font);
+        document.body.style.fontFamily = font;
+        document.getElementById('mainContainer').style.fontFamily = font;
+        Array.from(document.getElementsByClassName('invoice-box')).forEach(box => box.style.fontFamily = font);
+        updateLogoPreview();
+    }
+
+    document.getElementById('themePicker').addEventListener('change', applyThemeFontAccent);
+    document.getElementById('accentPicker').addEventListener('input', applyThemeFontAccent);
+    document.getElementById('fontPicker').addEventListener('change', applyThemeFontAccent);
+
+    document.getElementById('invoiceForm').onsubmit = function(e) {
+        e.preventDefault();
+        applyThemeFontAccent();
+        // Section toggles
+        const showLogo = document.getElementById('showLogo').checked;
+        const showNotes = document.getElementById('showNotes').checked;
+        const showAddress = document.getElementById('showAddress').checked;
+
+        // Gather data
+        const businessName = document.getElementById('businessName').value;
+        const businessAddress = document.getElementById('businessAddress').value.replace(/\n/g, '<br>');
+        const customerName = document.getElementById('customerName').value;
+        const customerAddress = document.getElementById('customerAddress').value.replace(/\n/g, '<br>');
+        const invoiceNumber = document.getElementById('invoiceNumber').value;
+        const invoiceDate = document.getElementById('invoiceDate').value || new Date().toISOString().slice(0,10);
+        const dueDate = document.getElementById('dueDate').value;
+        const notes = document.getElementById('notes').value.replace(/\n/g, '<br>');
+        const currency = document.getElementById('currencyPicker').value;
+        const taxPercent = parseFloat(document.getElementById('taxPercent').value) || 0;
+        const discountPercent = parseFloat(document.getElementById('discountPercent').value) || 0;
+
+        // Items
+        const itemRows = [];
+        for(let i=1; i<=itemCount; i++) {
+            const desc = document.getElementById('desc'+i);
+            const qty = document.getElementById('qty'+i);
+            const price = document.getElementById('price'+i);
+            if(desc && qty && price) {
+                if(desc.value.trim() !== '' && qty.value > 0 && price.value >= 0) {
+                    itemRows.push({
+                        description: desc.value,
+                        quantity: Number(qty.value),
+                        unit_price: Number(price.value)
+                    });
+                }
+            }
+        }
+        if(itemRows.length === 0) {
+            alert("Add at least one item.");
+            return;
+        }
+
+        // Invoice calculations
+        let rowsHtml = "";
+        let subtotal = 0;
+        itemRows.forEach(item => {
+            const itemSubtotal = item.quantity * item.unit_price;
+            subtotal += itemSubtotal;
+            rowsHtml += `
+            <tr>
+                <td>${item.description}</td>
+                <td>${item.quantity}</td>
+                <td>${currency}${item.unit_price.toFixed(2)}</td>
+                <td>${currency}${itemSubtotal.toFixed(2)}</td>
+            </tr>`;
+        });
+
+        // Tax/Discount calculations
+        let taxAmount = subtotal * (taxPercent / 100);
+        let discountAmount = subtotal * (discountPercent / 100);
+        let total = subtotal + taxAmount - discountAmount;
+
+        let logoHtml = "";
+        if (showLogo && logoDataUrl) {
+            logoHtml = `<img src="${logoDataUrl}" class="logo" alt="Logo"/>`;
+        }
+
+        // Centered logo, company name, and address
+        const invoiceHtml = `
+        <div class="invoice-box" id="invoiceBox" style="font-family:${document.body.style.fontFamily};">
+            <div class="invoice-header-center">
+                ${logoHtml}
+                <h2 class="invoice-company">${businessName}</h2>
+                ${showAddress ? `<p class="company-address">${businessAddress}</p>` : ""}
+            </div>
+            <hr>
+            <table>
+                <tr>
+                    <td><strong>Bill To:</strong><br>${customerName}<br>${customerAddress}</td>
+                    <td>
+                        <strong>Invoice #: </strong>${invoiceNumber}<br>
+                        <strong>Date: </strong>${invoiceDate}<br>
+                        <strong>Due Date: </strong>${dueDate}
+                    </td>
+                </tr>
+            </table>
+            <table style="margin-top:20px;">
+                <tr>
+                    <th>Description</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th>Subtotal</th>
+                </tr>
+                ${rowsHtml}
+                <tr class="total-row">
+                    <td colspan="3">Subtotal</td>
+                    <td>${currency}${subtotal.toFixed(2)}</td>
+                </tr>
+                ${taxPercent > 0 ? `<tr class="total-row">
+                    <td colspan="3">Tax (${taxPercent}%)</td>
+                    <td>${currency}${taxAmount.toFixed(2)}</td>
+                </tr>` : ""}
+                ${discountPercent > 0 ? `<tr class="total-row">
+                    <td colspan="3">Discount (${discountPercent}%)</td>
+                    <td>-${currency}${discountAmount.toFixed(2)}</td>
+                </tr>` : ""}
+                <tr class="total-row">
+                    <td colspan="3">Total</td>
+                    <td>${currency}${total.toFixed(2)}</td>
+                </tr>
+            </table>
+            ${showNotes && notes ? `<p style="margin-top:18px;"><strong>Notes:</strong> ${notes}</p>` : ""}
+        </div>
+        `;
+
+        document.getElementById('invoiceOutput').innerHTML = invoiceHtml;
+        document.getElementById('downloadBtn').style.display = 'inline-block';
+        applyThemeFontAccent();
+        window.scrollTo({top: document.getElementById('invoiceOutput').offsetTop, behavior:'smooth'});
+    };
+
+    function downloadInvoiceImage() {
+        const invoiceBox = document.getElementById('invoiceBox');
+        if (!invoiceBox) return;
+        html2canvas(invoiceBox, {backgroundColor: "#fff"}).then(function(canvas) {
+            const link = document.createElement('a');
+            link.download = 'invoice.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+    }
+</script>
+</body>
+</html></html><html></html>
